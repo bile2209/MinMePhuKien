@@ -112,21 +112,31 @@
 
   const lightbox = document.querySelector(".lightbox");
   const lightboxImg = lightbox?.querySelector("img");
+  const lightboxClose = lightbox?.querySelector(".lightbox-close");
+  let lastFocused = null;
   if (lightbox && lightboxImg) {
-    grid.addEventListener("click", (e) => {
-      const item = e.target.closest(".masonry-item");
-      if (!item) return;
-      const img = item.querySelector("img");
+    const openLightbox = (img) => {
+      lastFocused = document.activeElement;
       lightboxImg.src = img.currentSrc || img.src;
       lightboxImg.alt = img.alt;
       lightbox.classList.add("is-open");
+      lightboxClose?.focus();
+    };
+    const closeLightbox = () => {
+      lightbox.classList.remove("is-open");
+      lastFocused?.focus();
+    };
+    grid.addEventListener("click", (e) => {
+      const item = e.target.closest(".masonry-item");
+      if (!item) return;
+      openLightbox(item.querySelector("img"));
     });
     lightbox.addEventListener("click", (e) => {
-      if (e.target === lightbox || e.target.closest(".lightbox-close")) {
-        lightbox.classList.remove("is-open");
-      }
+      if (e.target === lightbox || e.target.closest(".lightbox-close")) closeLightbox();
     });
-    window.addEventListener("keydown", (e) => e.key === "Escape" && lightbox.classList.remove("is-open"));
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && lightbox.classList.contains("is-open")) closeLightbox();
+    });
   }
 })();
 
@@ -143,14 +153,23 @@
     if (!card) return 0;
     return card.getBoundingClientRect().width + 20;
   };
-  const max = () => track.children.length - 1;
+  const max = () => Math.max(track.children.length - 1, 0);
   const move = (dir) => {
     index = Math.min(Math.max(index + dir, 0), max());
     track.style.transform = `translateX(-${index * step()}px)`;
   };
   next?.addEventListener("click", () => move(1));
   prev?.addEventListener("click", () => move(-1));
-  window.addEventListener("resize", () => (track.style.transform = `translateX(-${index * step()}px)`));
+
+  /* debounced resize to avoid excessive layout reads */
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      index = Math.min(index, max());
+      track.style.transform = `translateX(-${index * step()}px)`;
+    }, 120);
+  }, { passive: true });
 })();
 
 /* ---- Reading progress bar (blog article pages) ----------------------------- */

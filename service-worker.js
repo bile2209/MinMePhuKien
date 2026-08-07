@@ -2,7 +2,7 @@
    Caches the app shell only; every other request goes to the network
    first so product content, blog posts and embeds always stay fresh. */
 
-const CACHE = "mmpk-shell-v1";
+const CACHE = "mmpk-shell-v2";
 const SHELL = ["/", "/css/style.css", "/js/main.js", "/offline.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
