@@ -5,6 +5,114 @@
    every blog page.
    ========================================================================== */
 
+/* ---- Preloader ------------------------------------------------------------- */
+(() => {
+  const preloader = document.getElementById("preloader");
+  if (!preloader) return;
+
+  const hide = () => {
+    preloader.classList.add("is-hidden");
+    preloader.addEventListener("transitionend", () => preloader.remove(), { once: true });
+  };
+
+  // Ẩn sau khi trang tải xong, tối thiểu 600ms để hiệu ứng kịp thấy
+  const minDelay = 600;
+  const start = performance.now();
+
+  const tryHide = () => {
+    const elapsed = performance.now() - start;
+    const wait = Math.max(0, minDelay - elapsed);
+    setTimeout(hide, wait);
+  };
+
+  if (document.readyState === "complete") {
+    tryHide();
+  } else {
+    window.addEventListener("load", tryHide, { once: true });
+    // Fallback: ẩn sau tối đa 4 giây dù trang chưa tải xong
+    setTimeout(hide, 4000);
+  }
+})();
+
+/* ---- Custom cursor --------------------------------------------------------- */
+(() => {
+  // Chỉ chạy trên thiết bị có chuột (pointer: fine) — bỏ qua màn hình cảm ứng
+  if (!window.matchMedia("(pointer: fine)").matches) return;
+
+  const dot  = document.querySelector(".cursor-dot");
+  const ring = document.querySelector(".cursor-ring");
+  if (!dot || !ring) return;
+
+  let mouseX = -200, mouseY = -200; // bắt đầu ngoài viewport
+  let ringX  = -200, ringY  = -200;
+  let entered = false;
+
+  // Dot bám sát ngay lập tức
+  document.addEventListener("mousemove", (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    dot.style.left = mouseX + "px";
+    dot.style.top  = mouseY + "px";
+    if (!entered) {
+      entered = true;
+      dot.classList.add("is-visible");
+      ring.classList.add("is-visible");
+      ringX = mouseX;
+      ringY = mouseY;
+    }
+  }, { passive: true });
+
+  // Ring đuổi theo chuột với độ trễ (easing factor 0.1 — giống giảm chấn lò xo)
+  const animateRing = () => {
+    ringX += (mouseX - ringX) * 0.11;
+    ringY += (mouseY - ringY) * 0.11;
+    ring.style.left = ringX + "px";
+    ring.style.top  = ringY + "px";
+    requestAnimationFrame(animateRing);
+  };
+  requestAnimationFrame(animateRing);
+
+  // Ẩn khi chuột ra khỏi cửa sổ
+  document.addEventListener("mouseleave", () => {
+    dot.classList.remove("is-visible");
+    ring.classList.remove("is-visible");
+    entered = false;
+  }, { passive: true });
+  document.addEventListener("mouseenter", () => {
+    dot.classList.add("is-visible");
+    ring.classList.add("is-visible");
+  }, { passive: true });
+
+  // Hiệu ứng hover: phóng to ring khi trỏ vào các phần tử tương tác
+  const HOVER_TARGETS = "a, button, [role='button'], label, summary, " +
+    ".filter-chip, .masonry-item, .tag-card, .category-card, " +
+    ".social-channel-card, .faq-q, .nav-toggle, .theme-toggle, .back-to-top";
+
+  document.addEventListener("mouseover", (e) => {
+    if (e.target.closest(HOVER_TARGETS)) {
+      dot.classList.add("is-hovered");
+      ring.classList.add("is-hovered");
+    }
+  }, { passive: true });
+
+  document.addEventListener("mouseout", (e) => {
+    if (e.target.closest(HOVER_TARGETS)) {
+      dot.classList.remove("is-hovered");
+      ring.classList.remove("is-hovered");
+    }
+  }, { passive: true });
+
+  // Hiệu ứng click: nén lại như lò xo
+  document.addEventListener("mousedown", () => {
+    dot.classList.add("is-clicking");
+    ring.classList.add("is-clicking");
+  }, { passive: true });
+  document.addEventListener("mouseup", () => {
+    dot.classList.remove("is-clicking");
+    ring.classList.remove("is-clicking");
+  }, { passive: true });
+})();
+
 /* ---- Theme (light / dark / system), persisted -------------------------- */
 (() => {
   const root = document.documentElement;

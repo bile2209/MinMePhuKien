@@ -219,12 +219,6 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
 }
 .hero-tag strong{ display:block; font-family:var(--font-display); font-size:1rem; font-style:normal; font-weight:600; letter-spacing:0; }
 
-.hero-scroll{
-  position:absolute; bottom:26px; left:50%; translate:-50% 0; display:flex; flex-direction:column; align-items:center; gap:8px;
-  font-family:var(--font-mono); font-size:.65rem; letter-spacing:.16em; color:var(--ink-faint); text-transform:uppercase;
-}
-.hero-scroll .line{ width:1px; height:34px; background:linear-gradient(var(--ink-faint), transparent); animation: scrollpulse 2.2s ease-in-out infinite; }
-@keyframes scrollpulse{ 0%,100%{ opacity:.3 } 50%{ opacity:1 } }
 
 @media (max-width: 860px){
   .hero-grid{ grid-template-columns:1fr; }
@@ -613,3 +607,121 @@ html[data-theme="dark"] .back-to-top{ background:var(--brass); color:var(--paper
 .masonry-item picture{ display:block; }
 .hero-visual picture{ display:block; width:100%; height:100%; }
 .category-card .thumb picture{ display:block; width:100%; height:100%; }
+
+/* ==========================================================================
+   Preloader
+   ========================================================================== */
+.preloader{
+  position:fixed; inset:0; z-index:9999;
+  background:var(--paper);
+  display:flex; align-items:center; justify-content:center;
+  transition: opacity .7s var(--ease), visibility .7s var(--ease);
+}
+.preloader.is-hidden{
+  opacity:0; visibility:hidden; pointer-events:none;
+}
+
+.preloader-inner{
+  position:relative; width:110px; height:110px;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* Outer ring — xoay chậm ngược chiều kim đồng hồ */
+.preloader-ring-outer{
+  position:absolute; inset:0; border-radius:50%;
+  border:1.6px solid var(--line);
+  border-top-color: var(--brass);
+  border-right-color: var(--thread);
+  animation: spin-cw 1.4s cubic-bezier(.5,.1,.5,.9) infinite;
+}
+
+/* Inner ring — xoay thuận chiều kim đồng hồ, nhỏ hơn */
+.preloader-ring-inner{
+  position:absolute; inset:16px; border-radius:50%;
+  border:1px solid transparent;
+  border-bottom-color: var(--denim);
+  border-left-color: var(--brass-deep);
+  animation: spin-ccw 2s cubic-bezier(.5,.1,.5,.9) infinite;
+}
+
+@keyframes spin-cw  { to{ transform:rotate(360deg);  } }
+@keyframes spin-ccw { to{ transform:rotate(-360deg); } }
+
+/* Price-tag brand card ở giữa */
+.preloader-tag{
+  position:relative; z-index:1;
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+  background:var(--paper-raised); border:1px solid var(--line);
+  border-radius:var(--radius-s); padding:10px 16px 10px 14px;
+  box-shadow: var(--shadow-tag);
+  animation: tag-sway 3.2s ease-in-out infinite;
+  transform-origin: center top;
+}
+
+/* Lỗ đục trên thẻ giá */
+.preloader-hole{
+  position:absolute; top:-6px; left:50%; translate:-50% 0;
+  width:10px; height:10px; border-radius:50%;
+  background:var(--paper); border:1.5px solid var(--line-strong);
+}
+
+/* Sợi chỉ treo */
+.preloader-thread{
+  position:absolute; top:-20px; left:50%; translate:-50% 0;
+  width:18px; height:16px;
+  border:1.5px solid var(--thread); border-bottom:none;
+  border-radius:10px 10px 0 0; opacity:.75;
+}
+
+.preloader-name{
+  font-family:var(--font-display); font-weight:600; font-size:1rem;
+  color:var(--ink); letter-spacing:-.01em; white-space:nowrap;
+}
+.preloader-sub{
+  font-family:var(--font-mono); font-size:.6rem; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--brass-deep);
+}
+
+/* Lắc nhẹ như thẻ giá secondhand treo gió */
+@keyframes tag-sway{
+  0%,100%{ transform:rotate(-3.5deg); }
+  50%     { transform:rotate( 3.5deg); }
+}
+
+/* ==========================================================================
+   Custom cursor  (chỉ hiện trên thiết bị có chuột chính xác)
+   ========================================================================== */
+@media (pointer: fine){
+  *, *::before, *::after{ cursor: none !important; }
+
+  .cursor-dot{
+    position:fixed; z-index:9998; pointer-events:none;
+    width:6px; height:6px; border-radius:50%;
+    background:var(--brass);
+    transform:translate(-50%,-50%);
+    transition: width .2s var(--ease), height .2s var(--ease), background .2s var(--ease), opacity .3s;
+    opacity:0; will-change:left,top;
+  }
+  .cursor-dot.is-visible{ opacity:1; }
+  .cursor-dot.is-hovered{ width:4px; height:4px; background:var(--thread); }
+  .cursor-dot.is-clicking{ width:3px; height:3px; }
+
+  .cursor-ring{
+    position:fixed; z-index:9997; pointer-events:none;
+    width:40px; height:40px; border-radius:50%;
+    border:1.4px solid var(--brass);
+    transform:translate(-50%,-50%);
+    opacity:0;
+    transition: width .35s var(--ease), height .35s var(--ease),
+                border-color .25s var(--ease), opacity .4s, border-width .25s;
+    will-change:left,top;
+  }
+  .cursor-ring.is-visible{ opacity:.6; }
+  .cursor-ring.is-hovered{
+    width:60px; height:60px;
+    border-color:var(--thread); border-width:1px; opacity:.5;
+  }
+  .cursor-ring.is-clicking{
+    width:30px; height:30px; opacity:.9;
+  }
+}
